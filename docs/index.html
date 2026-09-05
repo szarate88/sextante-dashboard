@@ -14,19 +14,19 @@
 
     <style>
         :root {
-            --ink: #f6f0e2;
-            --card: #fbf8f0;
-            --card-raised: #efe6cf;
-            --line: #d3c19e;
-            --text: #2a2013;
-            --text-muted: #6b5d42;
-            --brass: #8a5a12;
-            --brass-dim: #b48a3f;
-            --teal: #2c6e6a;
+            --ink: #eaf1f0;
+            --card: #fbfdfc;
+            --card-raised: #dfece9;
+            --line: #b9d0cb;
+            --text: #0e2a3a;
+            --text-muted: #4c6b72;
+            --brass: #a8720e;
+            --brass-dim: #cfa250;
+            --teal: #1a726b;
             --success: #2f7d52;
-            --warning: #93600a;
-            --danger: #a13d3d;
-            --focus-ring: #8a5a12;
+            --warning: #9c6a0a;
+            --danger: #bd502d;
+            --focus-ring: #a8720e;
         }
 
         * { box-sizing: border-box; }
@@ -35,8 +35,8 @@
             font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--ink);
             background-image:
-                radial-gradient(circle at 15% 8%, rgba(138,90,18,0.05) 0%, transparent 35%),
-                radial-gradient(circle at 85% 4%, rgba(44,110,106,0.05) 0%, transparent 30%);
+                radial-gradient(circle at 15% 8%, rgba(168,114,14,0.06) 0%, transparent 35%),
+                radial-gradient(circle at 85% 4%, rgba(26,114,107,0.07) 0%, transparent 30%);
             color: var(--text);
             margin: 0;
             padding: 28px;
@@ -104,8 +104,8 @@
            the one decorative flourish of the page. */
         .scale-rule {
             width: 100%;
-            height: 8px;
-            margin-bottom: 26px;
+            height: 40px;
+            margin-bottom: 20px;
             display: block;
         }
 
@@ -220,7 +220,7 @@
         }
         .tab-btn.active {
             background: var(--brass);
-            color: #fbf8f0;
+            color: #fbfdfc;
             border-color: var(--brass);
             font-weight: 600;
         }
@@ -285,9 +285,9 @@
             font-weight: 600;
         }
         .badge-active   { background-color: rgba(47, 125, 82, 0.13); color: var(--success); }
-        .badge-progress { background-color: rgba(147, 96, 10, 0.14);  color: var(--warning); }
-        .badge-high     { background-color: rgba(161, 61, 61, 0.14); color: var(--danger); }
-        .badge-neutral  { background-color: rgba(107, 93, 66, 0.12); color: var(--text-muted); }
+        .badge-progress { background-color: rgba(156, 106, 10, 0.14);  color: var(--warning); }
+        .badge-high     { background-color: rgba(189, 80, 45, 0.14); color: var(--danger); }
+        .badge-neutral  { background-color: rgba(76, 107, 114, 0.12); color: var(--text-muted); }
 
         .link-btn { color: var(--teal); text-decoration: none; font-weight: 500; }
         .link-btn:hover, .link-btn:focus-visible { text-decoration: underline; }
@@ -306,10 +306,10 @@
     <header>
         <div class="brand">
             <svg class="brand-mark" width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <circle cx="17" cy="17" r="15" stroke="#8a5a12" stroke-width="1.4"/>
-                <path d="M17 4 L17 30 M4 17 L30 17" stroke="#8a5a12" stroke-width="1" opacity="0.55"/>
-                <path d="M17 8 L20 17 L17 26 L14 17 Z" stroke="#2a2013" stroke-width="1.2" fill="none"/>
-                <circle cx="17" cy="17" r="2" fill="#8a5a12"/>
+                <circle cx="17" cy="17" r="15" stroke="#a8720e" stroke-width="1.4"/>
+                <path d="M17 4 L17 30 M4 17 L30 17" stroke="#a8720e" stroke-width="1" opacity="0.55"/>
+                <path d="M17 8 L20 17 L17 26 L14 17 Z" stroke="#0e2a3a" stroke-width="1.2" fill="none"/>
+                <circle cx="17" cy="17" r="2" fill="#a8720e"/>
             </svg>
             <div>
                 <h1>Sextante</h1>
@@ -325,17 +325,31 @@
     <!-- One held motif: a star sighted against the horizon, the reading a
          sextant takes to fix a position at sea or, just as well, a ship
          threading by starlight through open space. -->
-    <svg class="scale-rule" viewBox="0 0 1400 8" preserveAspectRatio="none" aria-hidden="true">
+    <!-- The motif: a position fix. Bearing lines from three sighted points
+         (stars, or a coastline, doesn't matter which) converge on the one
+         spot where you actually are — the whole point of taking a reading. -->
+    <svg class="scale-rule" viewBox="0 0 1400 56" preserveAspectRatio="none" aria-hidden="true">
         <defs>
             <linearGradient id="horizonFade" x1="0" y1="0" x2="1400" y2="0" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#d3c19e" stop-opacity="0"/>
-                <stop offset="18%" stop-color="#d3c19e" stop-opacity="1"/>
-                <stop offset="82%" stop-color="#d3c19e" stop-opacity="1"/>
-                <stop offset="100%" stop-color="#d3c19e" stop-opacity="0"/>
+                <stop offset="0%" stop-color="#b9d0cb" stop-opacity="0"/>
+                <stop offset="18%" stop-color="#b9d0cb" stop-opacity="1"/>
+                <stop offset="82%" stop-color="#b9d0cb" stop-opacity="1"/>
+                <stop offset="100%" stop-color="#b9d0cb" stop-opacity="0"/>
             </linearGradient>
         </defs>
-        <line x1="0" y1="4" x2="1400" y2="4" stroke="url(#horizonFade)" stroke-width="1"/>
-        <path d="M700 1 L703.2 4 L700 7 L696.8 4 Z" fill="#8a5a12"/>
+        <line x1="0" y1="50" x2="1400" y2="50" stroke="url(#horizonFade)" stroke-width="1"/>
+
+        <g stroke="#1a726b" stroke-width="1.2" opacity="0.8">
+            <line x1="700" y1="34" x2="588" y2="4"/>
+            <line x1="700" y1="34" x2="700" y2="2"/>
+            <line x1="700" y1="34" x2="808" y2="10"/>
+        </g>
+        <g fill="none" stroke="#a8720e" stroke-width="1.4">
+            <circle cx="588" cy="4" r="3"/>
+            <circle cx="700" cy="2" r="3"/>
+            <circle cx="808" cy="10" r="3"/>
+        </g>
+        <circle cx="700" cy="34" r="3.5" fill="#a8720e"/>
     </svg>
 
     <div class="dashboard-grid">
