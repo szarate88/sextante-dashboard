@@ -104,8 +104,8 @@
            the one decorative flourish of the page. */
         .scale-rule {
             width: 100%;
-            height: 14px;
-            margin-bottom: 28px;
+            height: 20px;
+            margin-bottom: 24px;
             display: block;
         }
 
@@ -322,31 +322,22 @@
         </div>
     </header>
 
-    <svg class="scale-rule" viewBox="0 0 1400 14" preserveAspectRatio="none" aria-hidden="true">
-        <line x1="0" y1="1" x2="1400" y2="1" stroke="#d3c19e" stroke-width="1"/>
-        <g stroke="#8a5a12" stroke-width="1">
-            <line x1="0" y1="1" x2="0" y2="9"/>
-            <line x1="70" y1="1" x2="70" y2="5"/>
-            <line x1="140" y1="1" x2="140" y2="9"/>
-            <line x1="210" y1="1" x2="210" y2="5"/>
-            <line x1="280" y1="1" x2="280" y2="9"/>
-            <line x1="350" y1="1" x2="350" y2="5"/>
-            <line x1="420" y1="1" x2="420" y2="9"/>
-            <line x1="490" y1="1" x2="490" y2="5"/>
-            <line x1="560" y1="1" x2="560" y2="9"/>
-            <line x1="630" y1="1" x2="630" y2="5"/>
-            <line x1="700" y1="1" x2="700" y2="9"/>
-            <line x1="770" y1="1" x2="770" y2="5"/>
-            <line x1="840" y1="1" x2="840" y2="9"/>
-            <line x1="910" y1="1" x2="910" y2="5"/>
-            <line x1="980" y1="1" x2="980" y2="9"/>
-            <line x1="1050" y1="1" x2="1050" y2="5"/>
-            <line x1="1120" y1="1" x2="1120" y2="9"/>
-            <line x1="1190" y1="1" x2="1190" y2="5"/>
-            <line x1="1260" y1="1" x2="1260" y2="9"/>
-            <line x1="1330" y1="1" x2="1330" y2="5"/>
-            <line x1="1399" y1="1" x2="1399" y2="9"/>
-        </g>
+    <!-- One held motif: a star sighted against the horizon, the reading a
+         sextant takes to fix a position at sea or, just as well, a ship
+         threading by starlight through open space. -->
+    <svg class="scale-rule" viewBox="0 0 1400 30" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+            <linearGradient id="horizonFade" x1="0" y1="0" x2="1400" y2="0" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#d3c19e" stop-opacity="0"/>
+                <stop offset="18%" stop-color="#d3c19e" stop-opacity="1"/>
+                <stop offset="82%" stop-color="#d3c19e" stop-opacity="1"/>
+                <stop offset="100%" stop-color="#d3c19e" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
+        <line x1="0" y1="26" x2="1400" y2="26" stroke="url(#horizonFade)" stroke-width="1"/>
+        <line x1="150" y1="6" x2="255" y2="26" stroke="#b48a3f" stroke-width="1" opacity="0.7"/>
+        <circle cx="255" cy="26" r="2" fill="#8a5a12"/>
+        <path d="M150 2 L152.1 8.2 158.6 8.5 153.4 12.5 155.3 18.8 150 15 144.7 18.8 146.6 12.5 141.4 8.5 147.9 8.2 Z" fill="#8a5a12"/>
     </svg>
 
     <div class="dashboard-grid">
