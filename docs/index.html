@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Tells the browser this page has its own dark palette, so Chrome/Edge's
-         "forced dark mode for web contents" and similar extensions don't try
-         to re-invert it (that double-inversion is the usual cause of
-         dark-text-on-dark-background bugs on a page that's already dark). -->
-    <meta name="color-scheme" content="dark">
+    <!-- Tells the browser this page has its own light palette, so browser/extension
+         dark-mode overrides don't try to invert it and create odd contrast. -->
+    <meta name="color-scheme" content="light">
     <title>Sextante</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,19 +14,19 @@
 
     <style>
         :root {
-            --ink: #0b0f1a;
-            --card: #141b2e;
-            --card-raised: #182140;
-            --line: #2a3550;
-            --text: #ece6d6;
-            --text-muted: #b7c0d4;
-            --brass: #d1a954;
-            --brass-dim: #8a723c;
-            --teal: #5fb3ac;
-            --success: #6fcf97;
-            --warning: #e8b23d;
-            --danger: #e2727a;
-            --focus-ring: #d1a954;
+            --ink: #f6f0e2;
+            --card: #fbf8f0;
+            --card-raised: #efe6cf;
+            --line: #d3c19e;
+            --text: #2a2013;
+            --text-muted: #6b5d42;
+            --brass: #8a5a12;
+            --brass-dim: #b48a3f;
+            --teal: #2c6e6a;
+            --success: #2f7d52;
+            --warning: #93600a;
+            --danger: #a13d3d;
+            --focus-ring: #8a5a12;
         }
 
         * { box-sizing: border-box; }
@@ -37,8 +35,8 @@
             font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--ink);
             background-image:
-                radial-gradient(circle at 15% 8%, rgba(209,169,84,0.05) 0%, transparent 35%),
-                radial-gradient(circle at 85% 4%, rgba(95,179,172,0.05) 0%, transparent 30%);
+                radial-gradient(circle at 15% 8%, rgba(138,90,18,0.05) 0%, transparent 35%),
+                radial-gradient(circle at 85% 4%, rgba(44,110,106,0.05) 0%, transparent 30%);
             color: var(--text);
             margin: 0;
             padding: 28px;
@@ -222,7 +220,7 @@
         }
         .tab-btn.active {
             background: var(--brass);
-            color: #1a1406;
+            color: #fbf8f0;
             border-color: var(--brass);
             font-weight: 600;
         }
@@ -250,13 +248,13 @@
         .checkbox-container label { cursor: pointer; flex-grow: 1; }
 
         .checkbox-container.selected-habit {
-            background-color: rgba(111, 207, 151, 0.12);
-            border-color: rgba(111, 207, 151, 0.35);
+            background-color: rgba(47, 125, 82, 0.10);
+            border-color: rgba(47, 125, 82, 0.30);
             color: var(--text);
             font-weight: 500;
         }
 
-        .week-prev .checkbox-container { background: rgba(255,255,255,0.02); }
+        .week-prev .checkbox-container { background: rgba(0,0,0,0.02); }
         .week-prev .checkbox-container input { pointer-events: none; opacity: 0.5; }
         .week-prev .checkbox-container label { color: var(--text-muted); }
 
@@ -286,10 +284,10 @@
             font-size: 11.5px;
             font-weight: 600;
         }
-        .badge-active   { background-color: rgba(111, 207, 151, 0.16); color: var(--success); }
-        .badge-progress { background-color: rgba(232, 178, 61, 0.18);  color: var(--warning); }
-        .badge-high     { background-color: rgba(226, 114, 122, 0.18); color: var(--danger); }
-        .badge-neutral  { background-color: rgba(183, 192, 212, 0.14); color: var(--text-muted); }
+        .badge-active   { background-color: rgba(47, 125, 82, 0.13); color: var(--success); }
+        .badge-progress { background-color: rgba(147, 96, 10, 0.14);  color: var(--warning); }
+        .badge-high     { background-color: rgba(161, 61, 61, 0.14); color: var(--danger); }
+        .badge-neutral  { background-color: rgba(107, 93, 66, 0.12); color: var(--text-muted); }
 
         .link-btn { color: var(--teal); text-decoration: none; font-weight: 500; }
         .link-btn:hover, .link-btn:focus-visible { text-decoration: underline; }
@@ -308,10 +306,10 @@
     <header>
         <div class="brand">
             <svg class="brand-mark" width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <circle cx="17" cy="17" r="15" stroke="#d1a954" stroke-width="1.4"/>
-                <path d="M17 4 L17 30 M4 17 L30 17" stroke="#d1a954" stroke-width="1" opacity="0.55"/>
-                <path d="M17 8 L20 17 L17 26 L14 17 Z" stroke="#ece6d6" stroke-width="1.2" fill="none"/>
-                <circle cx="17" cy="17" r="2" fill="#d1a954"/>
+                <circle cx="17" cy="17" r="15" stroke="#8a5a12" stroke-width="1.4"/>
+                <path d="M17 4 L17 30 M4 17 L30 17" stroke="#8a5a12" stroke-width="1" opacity="0.55"/>
+                <path d="M17 8 L20 17 L17 26 L14 17 Z" stroke="#2a2013" stroke-width="1.2" fill="none"/>
+                <circle cx="17" cy="17" r="2" fill="#8a5a12"/>
             </svg>
             <div>
                 <h1>Sextante</h1>
@@ -325,8 +323,8 @@
     </header>
 
     <svg class="scale-rule" viewBox="0 0 1400 14" preserveAspectRatio="none" aria-hidden="true">
-        <line x1="0" y1="1" x2="1400" y2="1" stroke="#2a3550" stroke-width="1"/>
-        <g stroke="#8a723c" stroke-width="1">
+        <line x1="0" y1="1" x2="1400" y2="1" stroke="#d3c19e" stroke-width="1"/>
+        <g stroke="#8a5a12" stroke-width="1">
             <line x1="0" y1="1" x2="0" y2="9"/>
             <line x1="70" y1="1" x2="70" y2="5"/>
             <line x1="140" y1="1" x2="140" y2="9"/>
