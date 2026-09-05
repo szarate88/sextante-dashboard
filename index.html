@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tells the browser this page has its own light palette, so browser/extension
+         dark-mode overrides don't try to invert it and create odd contrast. -->
+    <meta name="color-scheme" content="light">
+    <title>Sextante</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        :root {
+            --ink: #eaf1f0;
+            --card: #fbfdfc;
+            --card-raised: #dfece9;
+            --line: #b9d0cb;
+            --text: #0e2a3a;
+            --text-muted: #4c6b72;
+            --brass: #a8720e;
+            --brass-dim: #cfa250;
+            --teal: #1a726b;
+            --success: #2f7d52;
+            --warning: #9c6a0a;
+            --danger: #bd502d;
+            --focus-ring: #a8720e;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--ink);
+            background-image:
+                radial-gradient(circle at 15% 8%, rgba(168,114,14,0.06) 0%, transparent 35%),
+                radial-gradient(circle at 85% 4%, rgba(26,114,107,0.07) 0%, transparent 30%);
+            color: var(--text);
+            margin: 0;
+            padding: 28px;
+            line-height: 1.5;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; animation: none !important; }
+        }
+
+        a { color: var(--teal); }
+
+        :focus-visible {
+            outline: 2px solid var(--focus-ring);
+            outline-offset: 2px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        /* ---------- Header ---------- */
+        header {
+            padding: 4px 4px 20px 4px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .brand { display: flex; align-items: center; gap: 14px; }
+
+        .brand-mark { flex-shrink: 0; }
+
+        header h1 {
+            margin: 0;
+            font-family: 'Spectral', Georgia, serif;
+            font-style: italic;
+            font-weight: 600;
+            font-size: 30px;
+            letter-spacing: 0.01em;
+            color: var(--text);
+        }
+
+        header p {
+            margin: 3px 0 0 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .search-container input {
+            background-color: var(--ink);
+            border: 1px solid var(--line);
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: 7px;
+            font-size: 14px;
+            width: 280px;
+            outline: none;
+        }
+        .search-container input::placeholder { color: var(--text-muted); }
+        .search-container input:focus { border-color: var(--brass); }
+
+        /* Portolan rose: a compass rose woven over faint rhumb lines,
+           the one decorative flourish of the page. */
+        .scale-rule {
+            width: 100%;
+            height: 110px;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 24px 0;
+            margin: 0 -24px;
+        }
+
+        .main-content { display: table-cell; width: 70%; vertical-align: top; }
+        .sidebar { display: table-cell; width: 30%; vertical-align: top; }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 10px;
+            padding: 24px 24px 26px 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--line);
+            border-top: none;
+            position: relative;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 10px;
+            right: 10px;
+            height: 5px;
+            background:
+                linear-gradient(var(--brass-dim), var(--brass-dim)) top / 100% 1px no-repeat,
+                linear-gradient(var(--brass-dim), var(--brass-dim)) bottom / 100% 1px no-repeat;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-family: 'Spectral', Georgia, serif;
+            font-weight: 600;
+            font-size: 19px;
+            color: var(--text);
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        /* ---------- Launchpad ---------- */
+        .launchpad-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .launch-btn {
+            background-color: var(--card-raised);
+            border: 1px solid var(--line);
+            color: var(--text);
+            padding: 12px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            transition: border-color 0.15s ease, color 0.15s ease;
+            display: block;
+        }
+        .launch-btn:hover, .launch-btn:focus-visible {
+            border-color: var(--brass);
+            color: var(--brass);
+        }
+        .launch-btn-wide { grid-column: span 2; }
+
+        /* ---------- Morning alignment ---------- */
+        .alignment-section { margin-bottom: 18px; }
+        .alignment-section:last-child { margin-bottom: 0; }
+        .alignment-title {
+            font-family: 'Spectral', Georgia, serif;
+            font-style: italic;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--brass);
+            margin-bottom: 8px;
+        }
+        .alignment-box {
+            background-color: var(--card-raised);
+            padding: 12px 16px;
+            border-radius: 7px;
+            font-size: 13.5px;
+            line-height: 1.55;
+            border-left: 3px solid var(--teal);
+        }
+        .alignment-box ol { margin: 0; padding-left: 18px; }
+        .alignment-box li { margin-bottom: 6px; }
+        .alignment-box li:last-child { margin-bottom: 0; }
+        .highlight-text { color: var(--warning); font-weight: 600; }
+
+        /* ---------- Habit log ---------- */
+        .date-badge {
+            background-color: var(--card-raised);
+            border: 1px solid var(--line);
+            color: var(--brass);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+        .week-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 8px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .tab-btn.active {
+            background: var(--brass);
+            color: #fbfdfc;
+            border-color: var(--brass);
+            font-weight: 600;
+        }
+        .week-content { display: none; }
+        .week-content.active { display: block; }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            font-size: 13.5px;
+            line-height: 1.4;
+            padding: 10px 12px;
+            border-radius: 7px;
+            border: 1px solid transparent;
+        }
+        .checkbox-container input {
+            margin-right: 12px;
+            margin-top: 2px;
+            accent-color: var(--success);
+            cursor: pointer;
+            width: 15px;
+            height: 15px;
+        }
+        .checkbox-container label { cursor: pointer; flex-grow: 1; }
+
+        .checkbox-container.selected-habit {
+            background-color: rgba(47, 125, 82, 0.10);
+            border-color: rgba(47, 125, 82, 0.30);
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .week-prev .checkbox-container { background: rgba(0,0,0,0.02); }
+        .week-prev .checkbox-container input { pointer-events: none; opacity: 0.5; }
+        .week-prev .checkbox-container label { color: var(--text-muted); }
+
+        /* ---------- Tables ---------- */
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        th {
+            padding: 10px 12px;
+            background-color: var(--card-raised);
+            color: var(--brass);
+            border-bottom: 1px solid var(--line);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--line);
+            color: var(--text);
+            vertical-align: top;
+        }
+        tr:hover td { background-color: var(--card-raised); }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 5px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+        .badge-active   { background-color: rgba(47, 125, 82, 0.13); color: var(--success); }
+        .badge-progress { background-color: rgba(156, 106, 10, 0.14);  color: var(--warning); }
+        .badge-high     { background-color: rgba(189, 80, 45, 0.14); color: var(--danger); }
+        .badge-neutral  { background-color: rgba(76, 107, 114, 0.12); color: var(--text-muted); }
+
+        .link-btn { color: var(--teal); text-decoration: none; font-weight: 500; }
+        .link-btn:hover, .link-btn:focus-visible { text-decoration: underline; }
+
+        .loading-note { color: var(--text-muted); }
+
+        @media (max-width: 860px) {
+            .dashboard-grid { display: block; }
+            .main-content, .sidebar { display: block; width: 100%; }
+        }
+
+        .chart-footer {
+            max-width: 340px;
+            margin: 8px auto 0 auto;
+            padding-bottom: 4px;
+        }
+        .chart-footer svg { width: 100%; height: 20px; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="brand">
+            <svg class="brand-mark" width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="17" cy="17" r="15" stroke="#a8720e" stroke-width="1.4"/>
+                <path d="M17 4 L17 30 M4 17 L30 17" stroke="#a8720e" stroke-width="1" opacity="0.55"/>
+                <path d="M17 8 L20 17 L17 26 L14 17 Z" stroke="#0e2a3a" stroke-width="1.2" fill="none"/>
+                <circle cx="17" cy="17" r="2" fill="#a8720e"/>
+            </svg>
+            <div>
+                <h1>Sextante</h1>
+                <p>Panel de proyectos, financiamiento y publicaciones</p>
+            </div>
+        </div>
+        <div class="search-container">
+            <label for="dashboardSearch" class="visually-hidden" style="position:absolute; left:-9999px;">Buscar en las tablas</label>
+            <input type="text" id="dashboardSearch" onkeyup="filterTables()" placeholder="Buscar...">
+        </div>
+    </header>
+
+    <!-- The motif: a portolan compass rose woven over faint rhumb lines,
+         inspired by the wind roses on 16th-century nautical charts. -->
+    <svg class="scale-rule" viewBox="0 -55 1400 150" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+            <linearGradient id="horizonFade" x1="0" y1="0" x2="1400" y2="0" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#a8720e" stop-opacity="0"/>
+                <stop offset="30%" stop-color="#a8720e" stop-opacity="0.7"/>
+                <stop offset="70%" stop-color="#a8720e" stop-opacity="0.7"/>
+                <stop offset="100%" stop-color="#a8720e" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
+        <line x1="0" y1="35" x2="1400" y2="35" stroke="url(#horizonFade)" stroke-width="1"/>
+
+        <g stroke="#0e2a3a" stroke-width="0.5" opacity="0.3">
+            <line x1="300" y1="3" x2="1100" y2="67"/>
+            <line x1="300" y1="67" x2="1100" y2="3"/>
+            <line x1="240" y1="35" x2="1160" y2="35"/>
+        </g>
+
+        <path d="M700,35 L695.41,23.91 L700,-21 L704.59,23.91 Z" fill="#a8720e"/>
+        <path d="M700,35 L711.09,30.41 L756,35 L711.09,39.59 Z" fill="#1a726b"/>
+        <path d="M700,35 L704.59,46.09 L700,91 L695.41,46.09 Z" fill="#a8720e"/>
+        <path d="M700,35 L688.91,39.59 L644,35 L688.91,30.41 Z" fill="#1a726b"/>
+
+        <path d="M700,-21 L704.59,23.91 L724.04,10.96 L711.09,30.41 L756,35 L711.09,39.59 L724.04,59.04 L704.59,46.09 L700,91 L695.41,46.09 L675.96,59.04 L688.91,39.59 L644,35 L688.91,30.41 L675.96,10.96 L695.41,23.91 Z" fill="none" stroke="#0e2a3a" stroke-width="0.9"/>
+
+        <circle cx="700" cy="35" r="9" fill="#eaf1f0" stroke="#0e2a3a" stroke-width="0.9"/>
+        <circle cx="700" cy="35" r="2.8" fill="#a8720e"/>
+
+        <path d="M700,-21 L692,-42 C692,-52 708,-52 708,-42 C708,-33 702,-30 700,-21 Z" fill="#a8720e"/>
+    </svg>
+
+
+    <div class="dashboard-grid">
+        <div class="main-content">
+            <div class="card">
+                <h2>Proyectos activos</h2>
+                <div class="table-wrapper" id="table-projects">
+                    <p class="loading-note">Cargando proyectos...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Financiamiento en curso</h2>
+                <div class="table-wrapper" id="table-grants">
+                    <p class="loading-note">Cargando financiamiento...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Publicaciones</h2>
+                <div class="table-wrapper" id="table-publications">
+                    <p class="loading-note">Cargando publicaciones...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Oportunidades</h2>
+                <div class="table-wrapper" id="table-opportunities">
+                    <p class="loading-note">Cargando oportunidades...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <h2>Accesos directos</h2>
+                <div class="launchpad-grid">
+                    <a href="https://mail.google.com/mail/u/0/#inbox" target="_blank" class="launch-btn">Correo</a>
+                    <a href="https://app.todoist.com/app/project/chamba-6Crg5Vx6ff2GXp7v" target="_blank" class="launch-btn">Todoist</a>
+                    <a href="https://www.linkedin.com/feed/" target="_blank" class="launch-btn">LinkedIn</a>
+                    <a href="https://drive.google.com/drive/u/0/my-drive" target="_blank" class="launch-btn">Google Drive</a>
+                    <a href="https://airtable.com/app2rlFCWiu1IksPc/tblfPjmUiQeTs6FM2/viwtX0HWhfOKR06sL?blocks=hide" target="_blank" class="launch-btn launch-btn-wide">III Encuentro CTS Perú 2026</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Rumbo</h2>
+                <div class="alignment-section">
+                    <div class="alignment-title">¿Por qué hago lo que hago?</div>
+                    <div class="alignment-box">
+                        <ol>
+                            <li>Arte + ciencia + impacto</li>
+                            <li>Institucionalizar los estudios STS en Perú</li>
+                            <li>Quiero a mi país y me comprometo a hacer visible a quienes luchan por un futuro mejor</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="alignment-section">
+                    <div class="alignment-title">Para no olvidar</div>
+                    <div class="alignment-box" style="border-left-color: var(--brass);">
+                        <ol>
+                            <li>Para saber a dónde voy debo recordar de dónde vengo.</li>
+                            <li>Visión de futuro con raíces sólidas en el pasado. El presente es efímero, <span class="highlight-text">pero hoy hay que vivirlo.</span></li>
+                            <li>Humildad + paciencia + resiliencia + una gran sonrisa <span class="highlight-text">(alegría)</span></li>
+                            <li>Hacer pausas es necesario.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Bitácora de hábitos</h2>
+
+                <div class="date-badge" id="current-week-date">Semana del 06 al 12 de julio, 2026</div>
+
+                <div class="week-tabs">
+                    <button class="tab-btn active" id="btn-curr" onclick="switchWeek('current')">Semana actual</button>
+                    <button class="tab-btn" id="btn-prev" onclick="switchWeek('previous')">Semana anterior</button>
+                </div>
+
+                <div id="week-current" class="week-content active">
+                    <div id="current-habits-list"></div>
+                </div>
+
+                <div id="week-previous" class="week-content week-prev">
+                    <div id="previous-habits-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="chart-footer" aria-hidden="true">
+        <svg viewBox="0 0 300 20" preserveAspectRatio="xMidYMid meet">
+            <line x1="0" y1="10" x2="80" y2="10" stroke="#0e2a3a" stroke-width="0.6"/>
+            <line x1="0" y1="18" x2="80" y2="18" stroke="#0e2a3a" stroke-width="0.6"/>
+            <line x1="220" y1="10" x2="300" y2="10" stroke="#0e2a3a" stroke-width="0.6"/>
+            <line x1="220" y1="18" x2="300" y2="18" stroke="#0e2a3a" stroke-width="0.6"/>
+            <rect x="90" y="10" width="24" height="8" fill="#a8720e"/>
+            <rect x="114" y="10" width="24" height="8" fill="#eaf1f0" stroke="#a8720e" stroke-width="0.7"/>
+            <rect x="138" y="10" width="24" height="8" fill="#a8720e"/>
+            <rect x="162" y="10" width="24" height="8" fill="#eaf1f0" stroke="#a8720e" stroke-width="0.7"/>
+            <rect x="186" y="10" width="24" height="8" fill="#a8720e"/>
+        </svg>
+    </footer>
+</div>
+
+<script>
+    const habitsList = [
+        "Levantarme temprano y a dormir temprano (7am / 12am)",
+        "Almorzar entre 1-2pm los días de semana",
+        "Gimnasio/Entrenamiento 5 veces por semana",
+        "Planificar mi semana (lun o dom)",
+        "Elaborar presupuesto semanal",
+        "Reducir tiempo en Internet",
+        "Espacio creativo matutino (Académico, literario, guiones o visual)",
+        "Usar el carro y manejar de manera constante (1 vez o 2 veces x semana)",
+        "Ir a la playa"
+    ];
+
+    function initHabitsDashboard() {
+        if (!localStorage.getItem('sextante_current_week_v1')) {
+            localStorage.setItem('sextante_current_week_v1', JSON.stringify(new Array(habitsList.length).fill(false)));
+        }
+        if (!localStorage.getItem('sextante_previous_week_v1')) {
+            localStorage.setItem('sextante_previous_week_v1', JSON.stringify(new Array(habitsList.length).fill(false)));
+        }
+        renderHabits();
+    }
+
+    function renderHabits() {
+        const currentStates = JSON.parse(localStorage.getItem('sextante_current_week_v1'));
+        const previousStates = JSON.parse(localStorage.getItem('sextante_previous_week_v1'));
+
+        let currentHTML = "";
+        let previousHTML = "";
+
+        habitsList.forEach((habit, index) => {
+            const isChecked = currentStates[index];
+            currentHTML += `
+                <div class="checkbox-container ${isChecked ? 'selected-habit' : ''}" id="container_curr_${index}">
+                    <input type="checkbox" id="curr_${index}" ${isChecked ? 'checked' : ''} onchange="toggleHabit(${index})">
+                    <label for="curr_${index}">${habit}</label>
+                </div>`;
+
+            previousHTML += `
+                <div class="checkbox-container">
+                    <input type="checkbox" id="prev_${index}" ${previousStates[index] ? 'checked' : ''} disabled>
+                    <label>
+                        Sin registros previos — ${habit}
+                    </label>
+                </div>`;
+        });
+
+        document.getElementById('current-habits-list').innerHTML = currentHTML;
+        document.getElementById('previous-habits-list').innerHTML = previousHTML;
+    }
+
+    function toggleHabit(index) {
+        const currentStates = JSON.parse(localStorage.getItem('sextante_current_week_v1'));
+        currentStates[index] = !currentStates[index];
+        localStorage.setItem('sextante_current_week_v1', JSON.stringify(currentStates));
+        renderHabits();
+    }
+
+    function switchWeek(week) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.week-content').forEach(content => content.classList.remove('active'));
+
+        if (week === 'current') {
+            document.getElementById('btn-curr').classList.add('active');
+            document.getElementById('week-current').classList.add('active');
+        } else {
+            document.getElementById('btn-prev').classList.add('active');
+            document.getElementById('week-previous').classList.add('active');
+        }
+    }
+
+    initHabitsDashboard();
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function generateTableHTML(data) {
+        if (!data || data.length === 0) return '<p class="loading-note">Sin registros.</p>';
+
+        let tableHtml = '<table><thead><tr>';
+        const headers = Object.keys(data[0]).filter(k => k.trim() !== "");
+
+        headers.forEach(key => tableHtml += `<th>${escapeHtml(key)}</th>`);
+        tableHtml += '</tr></thead><tbody class="searchable-tbody">';
+
+        data.forEach(row => {
+            if (Object.values(row).some(x => x && x.trim() !== "")) {
+                tableHtml += '<tr>';
+                headers.forEach(key => {
+                    let cellValue = row[key] ? row[key].trim() : '';
+
+                    if (cellValue.startsWith('http://') || cellValue.startsWith('https://')) {
+                        tableHtml += `<td><a href="${cellValue}" target="_blank" class="link-btn">Ver enlace ↗</a></td>`;
+                    }
+                    else if (key.toLowerCase() === 'status' || key.toLowerCase() === 'stage' || key.toLowerCase() === 'priority') {
+                        let badgeClass = 'badge-neutral';
+                        let valLower = cellValue.toLowerCase();
+                        if (valLower === 'published' || valLower === 'awarded' || valLower === 'active') badgeClass = 'badge-active';
+                        if (valLower === 'submitted' || valLower === 'under review' || valLower === 'in progress' || valLower === 'upcoming call' || valLower === 'idea') badgeClass = 'badge-progress';
+                        if (valLower === 'high') badgeClass = 'badge-high';
+                        tableHtml += `<td><span class="badge ${badgeClass}">${escapeHtml(cellValue)}</span></td>`;
+                    }
+                    else if (key.toLowerCase().includes('subcomponents') || key.toLowerCase().includes('tasks')) {
+                        if (cellValue.includes(';')) {
+                            let items = cellValue.split(';').map(i => `<li>${escapeHtml(i.trim())}</li>`).join('');
+                            tableHtml += `<td><ul style="margin:0; padding-left:16px;">${items}</ul></td>`;
+                        } else {
+                            tableHtml += `<td>${escapeHtml(cellValue)}</td>`;
+                        }
+                    } else {
+                        tableHtml += `<td>${escapeHtml(cellValue)}</td>`;
+                    }
+                });
+                tableHtml += '</tr>';
+            }
+        });
+        tableHtml += '</tbody></table>';
+        return tableHtml;
+    }
+
+    function filterTables() {
+        let input = document.getElementById("dashboardSearch");
+        let filter = input.value.toLowerCase();
+        let rows = document.querySelectorAll(".searchable-tbody tr");
+
+        rows.forEach(row => {
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
+    }
+
+    // Repo name is read from the URL path instead of hardcoded, so a future
+    // rename (or forking this to a new repo) doesn't silently break the
+    // data-loading URLs.
+    const githubUser = window.location.hostname.split('.')[0];
+    const pathRepo = window.location.pathname.split('/').filter(Boolean)[0];
+    const repoName = pathRepo || 'sextante-dashboard';
+
+    const urlProjects = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/projects.csv`;
+    const urlPubs = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/publications.csv`;
+    const urlGrants = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/grants.csv`;
+    const urlOpps = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/opportunities.csv`;
+
+    const fallbackPath = "../data/";
+
+    Papa.parse(urlProjects, {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(r) { document.getElementById('table-projects').innerHTML = generateTableHTML(r.data); }
+    });
+
+    Papa.parse(urlPubs, {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(r) { document.getElementById('table-publications').innerHTML = generateTableHTML(r.data); }
+    });
+
+    Papa.parse(urlGrants, {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(r) { document.getElementById('table-grants').innerHTML = generateTableHTML(r.data); },
+        error: function() {
+            Papa.parse(fallbackPath + "grants.csv", {
+                download: true, header: true, skipEmptyLines: true,
+                complete: function(r) { document.getElementById('table-grants').innerHTML = generateTableHTML(r.data); }
+            });
+        }
+    });
+
+    Papa.parse(urlOpps, {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(r) { document.getElementById('table-opportunities').innerHTML = generateTableHTML(r.data); }
+    });
+</script>
+
+</body>
+</html>
