@@ -274,6 +274,7 @@
         }
         .week-content { display: none; }
         .week-content.active { display: block; }
+        .sync-actions { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
 
         .checkbox-container {
             display: flex;
@@ -302,9 +303,31 @@
             font-weight: 500;
         }
 
-        .week-prev .checkbox-container { background: rgba(0,0,0,0.02); }
-        .week-prev .checkbox-container input { pointer-events: none; opacity: 0.5; }
-        .week-prev .checkbox-container label { color: var(--text-muted); }
+        .history-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--line);
+            font-size: 12.5px;
+        }
+        .history-row:last-child { border-bottom: none; }
+        .history-date { flex: 0 0 auto; min-width: 160px; color: var(--text); }
+        .history-bar-track {
+            flex: 1;
+            height: 8px;
+            background: var(--card-raised);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .history-bar-fill { height: 100%; background: var(--success); border-radius: 4px; }
+        .history-count {
+            flex: 0 0 auto;
+            min-width: 42px;
+            text-align: right;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
 
         /* ---------- Tables ---------- */
         .table-wrapper { overflow-x: auto; }
@@ -477,15 +500,30 @@
 
                 <div class="week-tabs">
                     <button class="tab-btn active" id="btn-curr" onclick="switchWeek('current')">Semana actual</button>
-                    <button class="tab-btn" id="btn-prev" onclick="switchWeek('previous')">Semana anterior</button>
+                    <button class="tab-btn" id="btn-hist" onclick="switchWeek('history')">Historial</button>
+                </div>
+
+                <div class="sync-actions">
+                    <button class="tab-btn" onclick="exportHabits()">Exportar historial</button>
+                    <button class="tab-btn" onclick="showImport()">Importar historial</button>
+                </div>
+
+                <div id="sync-panel" style="display:none; margin-top:10px;">
+                    <textarea id="sync-textarea" rows="3" style="width:100%; box-sizing:border-box; font-size:11px; font-family:monospace; padding:8px; border-radius:6px; border:1px solid var(--line); background:var(--card-raised); color:var(--text); resize:vertical;"></textarea>
+                    <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                        <button class="tab-btn" onclick="copySyncCode()">Copiar</button>
+                        <button class="tab-btn" onclick="applyImport()">Cargar código pegado</button>
+                        <button class="tab-btn" onclick="closeSyncPanel()">Cerrar</button>
+                    </div>
+                    <p id="sync-message" style="font-size:11.5px; color:var(--text-muted); margin: 8px 0 0;"></p>
                 </div>
 
                 <div id="week-current" class="week-content active">
                     <div id="current-habits-list"></div>
                 </div>
 
-                <div id="week-previous" class="week-content week-prev">
-                    <div id="previous-habits-list"></div>
+                <div id="week-history" class="week-content">
+                    <div id="habits-history"></div>
                 </div>
             </div>
         </div>
@@ -519,22 +557,62 @@
         "Ir a la playa"
     ];
 
-    function initHabitsDashboard() {
-        if (!localStorage.getItem('sextante_current_week_v1')) {
-            localStorage.setItem('sextante_current_week_v1', JSON.stringify(new Array(habitsList.length).fill(false)));
-        }
-        if (!localStorage.getItem('sextante_previous_week_v1')) {
-            localStorage.setItem('sextante_previous_week_v1', JSON.stringify(new Array(habitsList.length).fill(false)));
-        }
-        renderHabits();
+    const HABITS_PREFIX = 'sextante_habits_week_';
+    const MONTHS_ES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    let currentWeekKey = null;
+
+    function pad2(n) { return String(n).padStart(2, '0'); }
+
+    // Monday of the week containing the given date (local time, hours zeroed).
+    function getMonday(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = (day === 0 ? -6 : 1 - day);
+        d.setDate(d.getDate() + diff);
+        d.setHours(0, 0, 0, 0);
+        return d;
     }
 
-    function renderHabits() {
-        const currentStates = JSON.parse(localStorage.getItem('sextante_current_week_v1'));
-        const previousStates = JSON.parse(localStorage.getItem('sextante_previous_week_v1'));
+    function weekKeyFor(monday) {
+        return HABITS_PREFIX + monday.getFullYear() + '-' + pad2(monday.getMonth() + 1) + '-' + pad2(monday.getDate());
+    }
 
+    // Parses a key produced by weekKeyFor back into a Date.
+    function mondayFromKey(key) {
+        const parts = key.replace(HABITS_PREFIX, '').split('-');
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    }
+
+    function formatWeekLabel(monday) {
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        const d1 = monday.getDate(), d2 = sunday.getDate();
+        const m1 = MONTHS_ES[monday.getMonth()], m2 = MONTHS_ES[sunday.getMonth()];
+        const y1 = monday.getFullYear(), y2 = sunday.getFullYear();
+        if (y1 === y2 && monday.getMonth() === sunday.getMonth()) {
+            return `Semana del ${d1} al ${d2} de ${m1}, ${y1}`;
+        } else if (y1 === y2) {
+            return `Semana del ${d1} de ${m1} al ${d2} de ${m2}, ${y1}`;
+        }
+        return `Semana del ${d1} de ${m1} de ${y1} al ${d2} de ${m2} de ${y2}`;
+    }
+
+    function initHabitsDashboard() {
+        const monday = getMonday(new Date());
+        currentWeekKey = weekKeyFor(monday);
+
+        if (!localStorage.getItem(currentWeekKey)) {
+            localStorage.setItem(currentWeekKey, JSON.stringify(new Array(habitsList.length).fill(false)));
+        }
+
+        document.getElementById('current-week-date').textContent = formatWeekLabel(monday);
+        renderCurrentHabits();
+        renderHistory();
+    }
+
+    function renderCurrentHabits() {
+        const currentStates = JSON.parse(localStorage.getItem(currentWeekKey));
         let currentHTML = "";
-        let previousHTML = "";
 
         habitsList.forEach((habit, index) => {
             const isChecked = currentStates[index];
@@ -543,25 +621,49 @@
                     <input type="checkbox" id="curr_${index}" ${isChecked ? 'checked' : ''} onchange="toggleHabit(${index})">
                     <label for="curr_${index}">${habit}</label>
                 </div>`;
-
-            previousHTML += `
-                <div class="checkbox-container">
-                    <input type="checkbox" id="prev_${index}" ${previousStates[index] ? 'checked' : ''} disabled>
-                    <label>
-                        Sin registros previos — ${habit}
-                    </label>
-                </div>`;
         });
 
         document.getElementById('current-habits-list').innerHTML = currentHTML;
-        document.getElementById('previous-habits-list').innerHTML = previousHTML;
     }
 
     function toggleHabit(index) {
-        const currentStates = JSON.parse(localStorage.getItem('sextante_current_week_v1'));
+        const currentStates = JSON.parse(localStorage.getItem(currentWeekKey));
         currentStates[index] = !currentStates[index];
-        localStorage.setItem('sextante_current_week_v1', JSON.stringify(currentStates));
-        renderHabits();
+        localStorage.setItem(currentWeekKey, JSON.stringify(currentStates));
+        renderCurrentHabits();
+        renderHistory();
+    }
+
+    // Past weeks (everything stored except the current one), most recent first.
+    function renderHistory() {
+        const keys = Object.keys(localStorage)
+            .filter(k => k.startsWith(HABITS_PREFIX) && k !== currentWeekKey)
+            .sort()
+            .reverse();
+
+        const container = document.getElementById('habits-history');
+
+        if (keys.length === 0) {
+            container.innerHTML = '<p class="loading-note">Todavía no hay semanas anteriores registradas. Cuando pase esta semana, aquí vas a poder ver tu progreso.</p>';
+            return;
+        }
+
+        let html = "";
+        keys.forEach(key => {
+            const states = JSON.parse(localStorage.getItem(key));
+            const count = states.filter(Boolean).length;
+            const total = habitsList.length;
+            const pct = Math.round((count / total) * 100);
+            const monday = mondayFromKey(key);
+            html += `
+                <div class="history-row">
+                    <div class="history-date">${formatWeekLabel(monday)}</div>
+                    <div class="history-bar-track"><div class="history-bar-fill" style="width:${pct}%"></div></div>
+                    <div class="history-count">${count}/${total}</div>
+                </div>`;
+        });
+
+        container.innerHTML = html;
     }
 
     function switchWeek(week) {
@@ -572,9 +674,75 @@
             document.getElementById('btn-curr').classList.add('active');
             document.getElementById('week-current').classList.add('active');
         } else {
-            document.getElementById('btn-prev').classList.add('active');
-            document.getElementById('week-previous').classList.add('active');
+            document.getElementById('btn-hist').classList.add('active');
+            document.getElementById('week-history').classList.add('active');
         }
+    }
+
+    // Export/import: everything stays local. The "code" is just this
+    // browser's habit data, base64-encoded so it's easy to copy and paste
+    // into the same page on another device.
+    function exportHabits() {
+        const data = {};
+        Object.keys(localStorage)
+            .filter(k => k.startsWith(HABITS_PREFIX))
+            .forEach(k => { data[k] = JSON.parse(localStorage.getItem(k)); });
+
+        const code = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+
+        const panel = document.getElementById('sync-panel');
+        const ta = document.getElementById('sync-textarea');
+        ta.value = code;
+        ta.readOnly = true;
+        panel.style.display = 'block';
+        document.getElementById('sync-message').textContent = 'Copia este código y pégalo en la otra Mac con "Importar historial".';
+        ta.focus();
+        ta.select();
+    }
+
+    function showImport() {
+        const panel = document.getElementById('sync-panel');
+        const ta = document.getElementById('sync-textarea');
+        ta.value = '';
+        ta.readOnly = false;
+        panel.style.display = 'block';
+        document.getElementById('sync-message').textContent = 'Pega aquí el código que copiaste de la otra Mac y presiona "Cargar código pegado".';
+        ta.focus();
+    }
+
+    function copySyncCode() {
+        const ta = document.getElementById('sync-textarea');
+        ta.select();
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(ta.value).then(() => {
+                document.getElementById('sync-message').textContent = 'Copiado al portapapeles.';
+            }).catch(() => {
+                document.getElementById('sync-message').textContent = 'No se pudo copiar automáticamente — selecciónalo y copia con Cmd+C.';
+            });
+        }
+    }
+
+    function applyImport() {
+        const ta = document.getElementById('sync-textarea');
+        const msg = document.getElementById('sync-message');
+        try {
+            const data = JSON.parse(decodeURIComponent(escape(atob(ta.value.trim()))));
+            let count = 0;
+            Object.keys(data).forEach(k => {
+                if (k.startsWith(HABITS_PREFIX)) {
+                    localStorage.setItem(k, JSON.stringify(data[k]));
+                    count++;
+                }
+            });
+            msg.textContent = `Historial importado: ${count} semana(s) actualizadas en esta Mac.`;
+            initHabitsDashboard();
+        } catch (e) {
+            msg.textContent = 'Ese código no se pudo leer — revisa que lo hayas copiado completo.';
+        }
+    }
+
+    function closeSyncPanel() {
+        document.getElementById('sync-panel').style.display = 'none';
     }
 
     initHabitsDashboard();
