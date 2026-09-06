@@ -608,15 +608,15 @@
                     if (cellValue.startsWith('http://') || cellValue.startsWith('https://')) {
                         tableHtml += `<td><a href="${cellValue}" target="_blank" class="link-btn">Ver enlace ↗</a></td>`;
                     }
-                    else if (key.toLowerCase() === 'status' || key.toLowerCase() === 'stage' || key.toLowerCase() === 'priority') {
+                    else if (key.toLowerCase() === 'status' || key.toLowerCase() === 'stage' || key.toLowerCase() === 'priority' || key.toLowerCase() === 'estado' || key.toLowerCase() === 'prioridad' || key.toLowerCase() === 'etapa') {
                         let badgeClass = 'badge-neutral';
                         let valLower = cellValue.toLowerCase();
-                        if (valLower === 'published' || valLower === 'awarded' || valLower === 'active') badgeClass = 'badge-active';
-                        if (valLower === 'submitted' || valLower === 'under review' || valLower === 'in progress' || valLower === 'upcoming call' || valLower === 'idea') badgeClass = 'badge-progress';
-                        if (valLower === 'high') badgeClass = 'badge-high';
+                        if (valLower === 'published' || valLower === 'awarded' || valLower === 'active' || valLower === 'activo' || valLower === 'publicado' || valLower === 'adjudicado') badgeClass = 'badge-active';
+                        if (valLower === 'submitted' || valLower === 'under review' || valLower === 'in progress' || valLower === 'upcoming call' || valLower === 'idea' || valLower === 'en progreso' || valLower === 'en revisión' || valLower === 'enviado' || valLower === 'próxima convocatoria') badgeClass = 'badge-progress';
+                        if (valLower === 'high' || valLower === 'alta') badgeClass = 'badge-high';
                         tableHtml += `<td><span class="badge ${badgeClass}">${escapeHtml(cellValue)}</span></td>`;
                     }
-                    else if (key.toLowerCase().includes('subcomponents') || key.toLowerCase().includes('tasks')) {
+                    else if (key.toLowerCase().includes('subcomponents') || key.toLowerCase().includes('tasks') || key.toLowerCase().includes('subcomponentes') || key.toLowerCase().includes('tareas')) {
                         if (cellValue.includes(';')) {
                             let items = cellValue.split(';').map(i => `<li>${escapeHtml(i.trim())}</li>`).join('');
                             tableHtml += `<td><ul style="margin:0; padding-left:16px;">${items}</ul></td>`;
