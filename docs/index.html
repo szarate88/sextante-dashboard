@@ -418,9 +418,9 @@
             </div>
 
             <div class="card">
-                <h2>Financiamiento en curso</h2>
-                <div class="table-wrapper" id="table-grants">
-                    <p class="loading-note">Cargando financiamiento...</p>
+                <h2>Oportunidades de financiamiento</h2>
+                <div class="table-wrapper" id="table-opportunities">
+                    <p class="loading-note">Cargando oportunidades...</p>
                 </div>
             </div>
 
@@ -428,13 +428,6 @@
                 <h2>Publicaciones</h2>
                 <div class="table-wrapper" id="table-publications">
                     <p class="loading-note">Cargando publicaciones...</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Oportunidades</h2>
-                <div class="table-wrapper" id="table-opportunities">
-                    <p class="loading-note">Cargando oportunidades...</p>
                 </div>
             </div>
         </div>
@@ -670,10 +663,7 @@
 
     const urlProjects = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/projects.csv`;
     const urlPubs = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/publications.csv`;
-    const urlGrants = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/grants.csv`;
     const urlOpps = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/opportunities.csv`;
-
-    const fallbackPath = "../data/";
 
     Papa.parse(urlProjects, {
         download: true, header: true, skipEmptyLines: true,
@@ -683,17 +673,6 @@
     Papa.parse(urlPubs, {
         download: true, header: true, skipEmptyLines: true,
         complete: function(r) { document.getElementById('table-publications').innerHTML = generateTableHTML(r.data); }
-    });
-
-    Papa.parse(urlGrants, {
-        download: true, header: true, skipEmptyLines: true,
-        complete: function(r) { document.getElementById('table-grants').innerHTML = generateTableHTML(r.data); },
-        error: function() {
-            Papa.parse(fallbackPath + "grants.csv", {
-                download: true, header: true, skipEmptyLines: true,
-                complete: function(r) { document.getElementById('table-grants').innerHTML = generateTableHTML(r.data); }
-            });
-        }
     });
 
     Papa.parse(urlOpps, {
