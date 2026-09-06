@@ -593,8 +593,24 @@
     function generateTableHTML(data) {
         if (!data || data.length === 0) return '<p class="loading-note">Sin registros.</p>';
 
-        let tableHtml = '<table><thead><tr>';
         const headers = Object.keys(data[0]).filter(k => k.trim() !== "");
+
+        // If the table has a priority column, sort rows Alta > Media > Baja
+        // (in either language), keeping original order within each tier.
+        const priorityKey = headers.find(k => ['priority', 'prioridad'].includes(k.toLowerCase()));
+        if (priorityKey) {
+            const rank = { alta: 0, high: 0, media: 1, medium: 1, baja: 2, low: 2 };
+            data = data
+                .map((row, i) => ({ row, i }))
+                .sort((a, b) => {
+                    const ra = rank[(a.row[priorityKey] || '').trim().toLowerCase()] ?? 99;
+                    const rb = rank[(b.row[priorityKey] || '').trim().toLowerCase()] ?? 99;
+                    return ra !== rb ? ra - rb : a.i - b.i;
+                })
+                .map(x => x.row);
+        }
+
+        let tableHtml = '<table><thead><tr>';
 
         headers.forEach(key => tableHtml += `<th>${escapeHtml(key)}</th>`);
         tableHtml += '</tr></thead><tbody class="searchable-tbody">';
