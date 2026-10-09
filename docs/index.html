@@ -441,7 +441,7 @@
             </div>
 
             <div class="card">
-                <h2>Comunidad Ciencia, Tecnología y Sociedad Perú</h2>
+                <h2>Comunidad Ciencia, Tecnología y Sociedad Peru</h2>
                 <div class="table-wrapper" id="table-community">
                     <p class="loading-note">Cargando iniciativas...</p>
                 </div>
@@ -451,6 +451,13 @@
                 <h2>Oportunidades de financiamiento</h2>
                 <div class="table-wrapper" id="table-opportunities">
                     <p class="loading-note">Cargando oportunidades...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Alianzas y Networking</h2>
+                <div class="table-wrapper" id="table-alliances">
+                    <p class="loading-note">Cargando alianzas...</p>
                 </div>
             </div>
 
@@ -840,6 +847,7 @@
     const urlCommunity = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/comunidad_cts.csv`;
     const urlPubs = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/publications.csv`;
     const urlOpps = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/opportunities.csv`;
+    const urlAlliances = `https://raw.githubusercontent.com/${githubUser}/${repoName}/main/data/alianzas.csv`;
 
     Papa.parse(urlProjects, {
         download: true, header: true, skipEmptyLines: true,
@@ -859,6 +867,11 @@
     Papa.parse(urlOpps, {
         download: true, header: true, skipEmptyLines: true,
         complete: function(r) { document.getElementById('table-opportunities').innerHTML = generateTableHTML(r.data); }
+    });
+
+    Papa.parse(urlAlliances, {
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(r) { document.getElementById('table-alliances').innerHTML = generateTableHTML(r.data); }
     });
 </script>
 
